@@ -47,3 +47,16 @@ with mlflow.start_run() as run:
     mlflow.sklearn.log_model(
         model, "model",
         signature=signature,
+        input_example=X_test.iloc[:1]
+    )
+
+    # Register model ke Model Registry
+    run_id = run.info.run_id
+    model_uri = f"runs:/{run_id}/model"
+    model_name = "car_price_model"
+
+    client = MlflowClient()
+    result = client.create_registered_model(model_name) if model_name not in [m.name for m in client.list_registered_models()] else None
+    client.create_model_version(model_name, model_uri, run_id=run_id)
+    
+    print(f"✅ Model logged dan didaftarkan ke Registry dengan MAE: {mae:.2f}")
